@@ -70,6 +70,7 @@ public class Game {
         currentPlayer.setChipCount(currentPlayer.getChipCount() -
                 (hand.getCurrentBetAmount() - currentPlayer.getCurrentBet()));
         currentPlayer.setCurrentBet(hand.getCurrentBetAmount());
+        gp.setBetLabel(currentPlayer.getSeatNum() - 1, currentPlayer.getCurrentBet());
         giveNextPlayerAction();
     }
 
@@ -91,7 +92,7 @@ public class Game {
         }
         currentPlayer.setCurrentBet(gp.getRaiseSlider().getValue());
         hand.setCurrentBetAmount(gp.getRaiseSlider().getValue());
-        gp.setBetLabel(currentPlayer.getSeatNum() - 1,hand.getCurrentBetAmount());
+        gp.setBetLabel(currentPlayer.getSeatNum() - 1,currentPlayer.getCurrentBet());
         hand.setCurrentBetPivot(currentPlayer);
         giveNextPlayerAction();
     }
@@ -154,7 +155,7 @@ public class Game {
     private Player getNextPlayer(){
         Player nextPlayer;
         for(int i = 0; i < Main.players.size() - 1; i++){
-            if(Main.players.get(    (i+currentPlayer.getSeatNum())  % (Main.players.size())  ).getActive()){
+            if(Main.players.get((i+currentPlayer.getSeatNum())  % (Main.players.size())  ).getActive()){
                 nextPlayer = Main.players.get((i + currentPlayer.getSeatNum()) % (Main.players.size()));
                 return nextPlayer;
             }
@@ -188,24 +189,40 @@ public class Game {
     //TODO make this a switch statement
     private void newBettingRound(){
         betRoundCounter++;
-
-        if(betRoundCounter > 3){
-            
-        } else{
-            for(int i = 0; i < Main.players.size(); i++){
-                hand.addPot(Main.players.get(i).getCurrentBet());
-                Main.players.get(i).setCurrentBet(0);
-
-            }
-            hand.setCurrentPlayer(Main.players.get(dealerButtonPos - 1));
-            hand.setCurrentBetAmount(0);
-            giveNextPlayerAction();
-            hand.setCurrentBetPivot(currentPlayer);
-            currentPlayer = hand.getCurrentPlayer();
-
-
+        gp.hideAllLabels();
+        switch(betRoundCounter){
+            case 1:
+                updateCommunityCards(3);
+                break;
+            case 2:
+                updateCommunityCards(1);
+                break;
+            case 3:
+                updateCommunityCards(1);
+                break;
+            default:
+                break;
         }
+        for(int i = 0; i < Main.players.size(); i++){
+            hand.addPot(Main.players.get(i).getCurrentBet());
+            Main.players.get(i).setCurrentBet(0);
+        }
+        hand.setCurrentPlayer(Main.players.get(dealerButtonPos - 1));
+        hand.setCurrentBetAmount(0);
+        hand.setCurrentBetPivot(currentPlayer);
+        giveNextPlayerAction();
+        currentPlayer = hand.getCurrentPlayer();
 
+    }
+
+    private void updateCommunityCards(int cardNum){
+        for(int i = 0; i < cardNum; i++){
+            Card tempC = hand.getDeck().pop();
+            Image image = Card.getImage(tempC.getValue(), tempC.getSuit());
+            Image tempImage = (image.getScaledInstance(65,90,Image.SCALE_DEFAULT));
+            ImageIcon tempIcon = new ImageIcon(tempImage);
+            gp.setCommunityCardImage(i, tempIcon);
+        }
     }
 
     public void startHand() {

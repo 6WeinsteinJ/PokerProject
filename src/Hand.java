@@ -69,6 +69,9 @@ public class Hand {
 
 
 
+    public Deck getDeck(){
+        return deck;
+    }
 
     public void setCurrentBetAmount(int currentBetAmount){
         this.currentBetAmount = currentBetAmount;

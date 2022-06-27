@@ -41,8 +41,9 @@ public class GamePanel {
         foldButton = new JButton("Fold");
         callButton = new JButton("Call");
         playerNumber = new JLabel();
-
-
+        for(int i = 0; i < 5; i++){
+            communityCardsLabel[i] = new JLabel();
+        }
 
         buttonPanel.setBackground(Color.WHITE);
         raisePanel.setBackground(Color.WHITE);
@@ -51,6 +52,7 @@ public class GamePanel {
         buttonPanel.setBounds(475, 600, 300, 150);
         raisePanel.setLayout(new GridLayout(0, 1));
         buttonPanel.setLayout(new GridLayout(2, 2));
+        communityCardPanel.setLayout(new FlowLayout());
 
         NumberFormat format = NumberFormat.getInstance();
         format.setGroupingUsed(false);
@@ -90,6 +92,8 @@ public class GamePanel {
         betPanel[6].setBounds(285,275,60,30);
         betPanel[7].setBounds(300,180,60,30);
         betPanel[8].setBounds(425,130,60,30);
+        communityCardPanel.setBounds(430,225,350,90);
+        communityCardPanel.setBackground(new Color(0,0,0,0));
 
 
         callButton.setFocusable(false);
@@ -98,6 +102,7 @@ public class GamePanel {
         betButton.setFocusable(false);
 
         for(int i = 0; i < Main.players.size(); i++){
+            betLabel[i] = new JLabel();
             frame.add(playerPanel[i]);
             frame.add(betPanel[i]);
         }
@@ -119,6 +124,7 @@ public class GamePanel {
 
         buttonPanel.add(playerNumber);
         frame.add(buttonPanel);
+        frame.add(communityCardPanel);
         frame.add(raisePanel);
         frame.add(panel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -134,6 +140,7 @@ public class GamePanel {
             playerPanel[i].setLayout(new GridLayout());
             betPanel[i] = new JPanel();
             betPanel[i].setBackground(new Color(179, 174, 54,175));
+            betPanel[i].setLayout(new GridBagLayout());
         }
     }
 
@@ -224,7 +231,9 @@ public class GamePanel {
     }
 
     public void setBetLabel(int i, int bet){
-        betLabel[i] = new JLabel(String.valueOf(bet));
+        betLabel[i].setText(String.valueOf(bet));
+        betLabel[i].setEnabled(true);
+        betPanel[i].add(betLabel[i]);
     }
 
     public void setLabelImage(int i,int j, ImageIcon image){
@@ -233,9 +242,14 @@ public class GamePanel {
         playerPanel[i].add(playerLabel[i][j]);
     }
 
+    public void setCommunityCardImage(int i, ImageIcon image){
+        communityCardsLabel[i].setIcon(image);
+        communityCardPanel.add(communityCardsLabel[i]);
+    }
+
     public void hideAllLabels(){
-        for(JLabel i : betLabel){
-            i.setEnabled(false);
+        for(int i =0; i < Main.players.size(); i++){
+            betLabel[i].setEnabled(false);
         }
     }
 }
