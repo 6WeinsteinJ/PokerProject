@@ -11,6 +11,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.text.NumberFormat;
 
 public class GamePanel {
@@ -20,9 +21,8 @@ public class GamePanel {
     private JFormattedTextField betAmount;
     private JSlider raiseSlider;
     private JLabel playerNumber;
-    private JPanel p1Panel, p2Panel, p3Panel, p4Panel, p5Panel, p6Panel, p7Panel, p8Panel, p9Panel;
-    private JLabel player1Chips, player2Chips, player3Chips, player4Chips, player5Chips, player6Chips, player7Chips, player8Chips, player9Chips;
-
+    private JPanel[] playerPanel = new JPanel[9];
+    private JLabel[][] playerLabel = new JLabel[9][2];
 
 
     public GamePanel() {
@@ -37,6 +37,13 @@ public class GamePanel {
         foldButton = new JButton("Fold");
         callButton = new JButton("Call");
         playerNumber = new JLabel();
+
+        for(int i = 0; i < playerLabel.length; i++){
+            for(int j = 0; j < playerLabel[0].length; j++){
+                playerLabel[i][j] = new JLabel();
+            }
+        }
+
 
         buttonPanel.setBackground(Color.WHITE);
         raisePanel.setBackground(Color.WHITE);
@@ -63,54 +70,50 @@ public class GamePanel {
             e.printStackTrace();
         }
 
+        playerPanel[0] = new JPanel();
+        playerPanel[0].setBounds(715,25,130,100);
+        playerPanel[0].setLayout(new GridLayout());
+        frame.add(playerPanel[0]);
 
+        playerPanel[1] = new JPanel();
+        playerPanel[1].setBounds(875,100,130,100);
+        playerPanel[1].setLayout(new GridLayout());
+        frame.add(playerPanel[1]);
 
+        playerPanel[2] = new JPanel();
+        playerPanel[2].setBounds(940,275,130,100);
+        playerPanel[2].setLayout(new GridLayout());
+        frame.add(playerPanel[2]);
 
-        p1Panel = new JPanel();
-        p1Panel.setBackground(Color.red);
-        p1Panel.setBounds(715,55,50,50);
-        frame.add(p1Panel);
+        playerPanel[3] = new JPanel();
+        playerPanel[3].setBounds(830,425,130,100);
+        playerPanel[3].setLayout(new GridLayout());
+        frame.add(playerPanel[3]);
 
-        p2Panel = new JPanel();
-        p2Panel.setBackground(Color.MAGENTA);
-        p2Panel.setBounds(875,100,50,50);
-        frame.add(p2Panel);
+        playerPanel[4] = new JPanel();
+        playerPanel[4].setBounds(580,445,130,100);
+        playerPanel[4].setLayout(new GridLayout());
+        frame.add(playerPanel[4]);
 
-        p3Panel = new JPanel();
-        p3Panel.setBackground(Color.yellow);
-        p3Panel.setBounds(940,275,50,50);
-        frame.add(p3Panel);
+        playerPanel[5] = new JPanel();
+        playerPanel[5].setBounds(340,425,130,100);
+        playerPanel[5].setLayout(new GridLayout());
+        frame.add(playerPanel[5]);
 
-        p4Panel = new JPanel();
-        p4Panel.setBackground(Color.orange);
-        p4Panel.setBounds(830,425,50,50);
-        frame.add(p4Panel);
+        playerPanel[6] = new JPanel();
+        playerPanel[6].setBounds(210,275,130,100);
+        playerPanel[6].setLayout(new GridLayout());
+        frame.add(playerPanel[6]);
 
-        p5Panel = new JPanel();
-        p5Panel.setBackground(Color.black);
-        p5Panel.setBounds(580,445,50,50);
-        frame.add(p5Panel);
+        playerPanel[7] = new JPanel();
+        playerPanel[7].setBounds(230,110,130,100);
+        playerPanel[7].setLayout(new GridLayout());
+        frame.add(playerPanel[7]);
 
-        p6Panel = new JPanel();
-        p6Panel.setBackground(Color.orange);
-        p6Panel.setBounds(340,425,50,50);
-        frame.add(p6Panel);
-
-        p7Panel = new JPanel();
-        p7Panel.setBackground(Color.yellow);
-        p7Panel.setBounds(210,275,50,50);
-        frame.add(p7Panel);
-
-        p8Panel = new JPanel();
-        p8Panel.setBackground(Color.MAGENTA);
-        p8Panel.setBounds(230,110,50,50);
-        frame.add(p8Panel);
-
-        p9Panel = new JPanel();
-        p9Panel.setBackground(Color.red);
-        p9Panel.setBounds(400,55,50,50);
-        frame.add(p9Panel);
-
+        playerPanel[8] = new JPanel();
+        playerPanel[8].setBounds(400,25,130,100);
+        playerPanel[8].setLayout(new GridLayout());
+        frame.add(playerPanel[8]);
 
         callButton.setFocusable(false);
         checkButton.setFocusable(false);
@@ -125,9 +128,6 @@ public class GamePanel {
         raiseSlider.setPaintLabels(true);
         raiseSlider.setBorder(
                 BorderFactory.createEmptyBorder(0, 0, 10, 0));
-
-
-
 
 
         buttonPanel.add(callButton);
@@ -147,7 +147,6 @@ public class GamePanel {
         frame.setResizable(false);
         frame.setVisible(true);
     }
-
 
     public void frameToFront(){
         frame.setAlwaysOnTop(true);
@@ -235,4 +234,12 @@ public class GamePanel {
         this.playerNumber.setText("Player " + playerNumber);
     }
 
+    public JPanel[] getPlayerPanel(){
+        return playerPanel;
+    }
+
+    public void setLabelImage(int i,int j, ImageIcon image){
+        playerLabel[i][j].setIcon(image);
+        playerPanel[i].add(playerLabel[i][j]);
+    }
 }

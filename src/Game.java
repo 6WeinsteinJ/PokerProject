@@ -5,7 +5,9 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.image.BufferedImage;
 import java.util.List;
 
 //General class for keeping track of the game across hands
@@ -105,6 +107,23 @@ public class Game {
         System.out.println("Buttons updated!");
     }
 
+    private void updatePlayers(){
+        Image tempImage;
+        ImageIcon tempIcon;
+        BufferedImage image;
+        Card tempC;
+        for(int i = 0; i < Main.players.size(); i++){
+            for(int j = 0; j < 2; j++) {
+                tempC = Main.players.get(i).getCurrentHand().getCard(j);
+                image = Card.getImage(tempC.getValue(), tempC.getSuit());
+                tempImage = (image.getScaledInstance(65,90,Image.SCALE_DEFAULT));
+                tempIcon = new ImageIcon(tempImage);
+                gp.setLabelImage(i,j,tempIcon);
+            }
+
+        }
+    }
+
     private void updateSlider() {
 
 
@@ -142,11 +161,10 @@ public class Game {
 
     private void giveNextPlayerAction(){
         Player nextPlayer = getNextPlayer();
-        if(currentPlayer == hand.getCurrentBetPivot()){
-            newBettingRound();
-
-        }
-        else if(currentPlayer != nextPlayer) {
+//        if(currentPlayer == hand.getCurrentBetPivot()){
+//            newBettingRound();
+//        }
+        if(currentPlayer != nextPlayer) {
             currentPlayer = getNextPlayer();
             hand.setCurrentPlayer(currentPlayer);
             System.out.println("NextPlayer seat num is " + currentPlayer.getSeatNum());
@@ -169,6 +187,7 @@ public class Game {
 
     public void gameLoop() {
         getNewHand();
+        updatePlayers();
         setAllActive();
         hand.setBigBlind(10);
         Main.players.get((dealerButtonPos + 1) % Main.players.size()).setCurrentBet(hand.getBigBlind());
@@ -178,7 +197,9 @@ public class Game {
         currentPlayer = hand.getCurrentPlayer();
         gp.setPlayerNumber(currentPlayer.getSeatNum());
         gp.resetAllButtons();
+        hand.setCurrentBetPivot(currentPlayer);
         updateSlider();
         updateButtons();
+
     }
 }
