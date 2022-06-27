@@ -17,13 +17,14 @@ public class Game {
     private Hand hand;
     private GamePanel gp;
     private Player currentPlayer;
+    private int betRoundCounter = 0;
 
 
     public Game(GamePanel gp) {
         this.gp = gp;
         gp.frameToFront();
         initController();
-        gameLoop();
+        startHand();
     }
 
 
@@ -68,6 +69,7 @@ public class Game {
         System.out.println("You called");
         currentPlayer.setChipCount(currentPlayer.getChipCount() -
                 (hand.getCurrentBetAmount() - currentPlayer.getCurrentBet()));
+        currentPlayer.setCurrentBet(hand.getCurrentBetAmount());
         giveNextPlayerAction();
     }
 
@@ -89,6 +91,7 @@ public class Game {
         }
         currentPlayer.setCurrentBet(gp.getRaiseSlider().getValue());
         hand.setCurrentBetAmount(gp.getRaiseSlider().getValue());
+        gp.setBetLabel(currentPlayer.getSeatNum() - 1,hand.getCurrentBetAmount());
         hand.setCurrentBetPivot(currentPlayer);
         giveNextPlayerAction();
     }
@@ -161,10 +164,10 @@ public class Game {
 
     private void giveNextPlayerAction(){
         Player nextPlayer = getNextPlayer();
-//        if(currentPlayer == hand.getCurrentBetPivot()){
-//            newBettingRound();
-//        }
-        if(currentPlayer != nextPlayer) {
+       if(nextPlayer == hand.getCurrentBetPivot()){
+           newBettingRound();
+        }
+        else if(currentPlayer != nextPlayer) {
             currentPlayer = getNextPlayer();
             hand.setCurrentPlayer(currentPlayer);
             System.out.println("NextPlayer seat num is " + currentPlayer.getSeatNum());
@@ -175,23 +178,43 @@ public class Game {
 //        else if()
     }
 
+
     private void setAllActive(){
         for(Player i: Main.players){
             i.setActive(true);
         }
     }
 
+    //TODO make this a switch statement
     private void newBettingRound(){
+        betRoundCounter++;
+
+        if(betRoundCounter > 3){
+            
+        } else{
+            for(int i = 0; i < Main.players.size(); i++){
+                hand.addPot(Main.players.get(i).getCurrentBet());
+                Main.players.get(i).setCurrentBet(0);
+
+            }
+            hand.setCurrentPlayer(Main.players.get(dealerButtonPos - 1));
+            hand.setCurrentBetAmount(0);
+            giveNextPlayerAction();
+            hand.setCurrentBetPivot(currentPlayer);
+            currentPlayer = hand.getCurrentPlayer();
+
+
+        }
 
     }
 
-    public void gameLoop() {
+    public void startHand() {
         getNewHand();
         updatePlayers();
         setAllActive();
         hand.setBigBlind(10);
+        Main.players.get((dealerButtonPos) % Main.players.size()).setCurrentBet(hand.getBigBlind());
         Main.players.get((dealerButtonPos + 1) % Main.players.size()).setCurrentBet(hand.getBigBlind());
-        Main.players.get((dealerButtonPos + 2) % Main.players.size()).setCurrentBet(hand.getBigBlind());
         hand.setCurrentBetAmount(hand.getBigBlind());
         hand.setCurrentPlayer(Main.players.get((dealerButtonPos + 2) % Main.players.size()));
         currentPlayer = hand.getCurrentPlayer();

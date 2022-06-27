@@ -31,7 +31,7 @@ public class Hand {
 
 
 
-    private List<PlayerHand> determineWinningHands(List<PlayerHand> playerList){
+    public List<PlayerHand> determineWinningHands(List<PlayerHand> playerList){
         PlayerHand bestPlayer = playerList.get(0);
         List<PlayerHand> winners = new ArrayList<>();
         winners.add(bestPlayer);
@@ -100,5 +100,17 @@ public class Hand {
 
     public Player getCurrentBetPivot(){
         return currentBetPivot;
+    }
+
+    public void addPot(int pot){
+        mainPot += pot;
+    }
+
+    public void setPot(int pot){
+        mainPot = pot;
+    }
+
+    public int getPot(){
+        return mainPot;
     }
 }

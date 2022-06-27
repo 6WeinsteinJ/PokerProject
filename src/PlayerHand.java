@@ -34,7 +34,6 @@ public class PlayerHand{
         return playerHand.size();
     }
 
-    //Returns the player hand as a string (Will probably change later)
     public String toString(){
         StringBuffer buf = new StringBuffer();
         for(Card i: playerHand){
