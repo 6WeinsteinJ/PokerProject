@@ -192,13 +192,13 @@ public class Game {
         gp.hideAllLabels();
         switch(betRoundCounter){
             case 1:
-                updateCommunityCards(3);
+                updateFlopCards();
                 break;
             case 2:
-                updateCommunityCards(1);
+                updateTurnAndRiverCards(3);
                 break;
             case 3:
-                updateCommunityCards(1);
+                updateTurnAndRiverCards(4);
                 break;
             default:
                 break;
@@ -209,20 +209,37 @@ public class Game {
         }
         hand.setCurrentPlayer(Main.players.get(dealerButtonPos - 1));
         hand.setCurrentBetAmount(0);
+        gp.getRaiseSlider().setMinimum(0);
         hand.setCurrentBetPivot(currentPlayer);
         giveNextPlayerAction();
         currentPlayer = hand.getCurrentPlayer();
 
     }
 
-    private void updateCommunityCards(int cardNum){
-        for(int i = 0; i < cardNum; i++){
-            Card tempC = hand.getDeck().pop();
-            Image image = Card.getImage(tempC.getValue(), tempC.getSuit());
-            Image tempImage = (image.getScaledInstance(65,90,Image.SCALE_DEFAULT));
-            ImageIcon tempIcon = new ImageIcon(tempImage);
+    private void updateFlopCards(){
+        Card tempC;
+        Image image;
+        Image tempImage;
+        ImageIcon tempIcon;
+        for(int i = 0; i < 3; i++){
+            tempC = hand.getDeck().pop();
+            image = Card.getImage(tempC.getValue(), tempC.getSuit());
+            tempImage = (image.getScaledInstance(65,90,Image.SCALE_DEFAULT));
+            tempIcon = new ImageIcon(tempImage);
             gp.setCommunityCardImage(i, tempIcon);
         }
+    }
+
+    private void updateTurnAndRiverCards(int num){
+        Card tempC;
+        Image image;
+        Image tempImage;
+        ImageIcon tempIcon;
+            tempC = hand.getDeck().pop();
+            image = Card.getImage(tempC.getValue(), tempC.getSuit());
+            tempImage = (image.getScaledInstance(65,90,Image.SCALE_DEFAULT));
+            tempIcon = new ImageIcon(tempImage);
+            gp.setCommunityCardImage(num, tempIcon);
     }
 
     public void startHand() {

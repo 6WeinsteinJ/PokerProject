@@ -45,6 +45,7 @@ public class GamePanel {
             communityCardsLabel[i] = new JLabel();
         }
 
+
         buttonPanel.setBackground(Color.WHITE);
         raisePanel.setBackground(Color.WHITE);
         panel.setBackground(Color.white);
@@ -72,6 +73,7 @@ public class GamePanel {
             e.printStackTrace();
         }
 
+
         initPlayerAndBetPanel();
 
         playerPanel[0].setBounds(715,25,130,92);
@@ -92,8 +94,7 @@ public class GamePanel {
         betPanel[6].setBounds(285,275,60,30);
         betPanel[7].setBounds(300,180,60,30);
         betPanel[8].setBounds(425,130,60,30);
-        communityCardPanel.setBounds(430,225,350,90);
-        communityCardPanel.setBackground(new Color(0,0,0,0));
+        communityCardPanel.setBounds(430,225,350,100);
 
 
         callButton.setFocusable(false);
@@ -232,7 +233,7 @@ public class GamePanel {
 
     public void setBetLabel(int i, int bet){
         betLabel[i].setText(String.valueOf(bet));
-        betLabel[i].setEnabled(true);
+        betLabel[i].setVisible(true);
         betPanel[i].add(betLabel[i]);
     }
 
@@ -249,7 +250,7 @@ public class GamePanel {
 
     public void hideAllLabels(){
         for(int i =0; i < Main.players.size(); i++){
-            betLabel[i].setEnabled(false);
+            betLabel[i].setVisible(false);
         }
     }
 }
