@@ -33,55 +33,52 @@ public class Game {
     }
 
 
-    private void initController() {
-        gp.getCallButton().addActionListener(e -> callAction());
+    public void startHand() {
+        getNewHand();
+        updatePlayers();
+        setAllActive();
+        hand.setBigBlind(10);
 
-        gp.getCheckButton().addActionListener(e -> checkAction());
+        //Initializes the big and small blinds
+        setPlayerBet(dealerButtonPos % Main.players.size(), hand.getBigBlind()/2);
+        setPlayerBet((dealerButtonPos+1) % Main.players.size(), hand.getBigBlind());
 
-        gp.getFoldButton().addActionListener(e -> foldAction());
 
-        gp.getBetButton().addActionListener(e -> betAction());
-
-        gp.getRaiseSlider().addChangeListener(e -> updateTextBox());
-
-        gp.getBetAmount().getDocument().addDocumentListener(new DocumentListener() {
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                updateSlider();
-            }
-
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                updateSlider();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                updateSlider();
-            }
-        });
+        hand.setCurrentPlayer(Main.players.get((dealerButtonPos + 2) % Main.players.size()));
+        currentPlayer = hand.getCurrentPlayer();
+        gp.setPlayerNumber(currentPlayer.getSeatNum());
+        gp.resetAllButtons();
+        hand.setCurrentBetPivot(currentPlayer);
+        updateSlider();
+        updateButtons();
 
     }
+
+
 
 
     private void callAction() {
         System.out.println("You called");
         currentPlayer.setChipCount(currentPlayer.getChipCount() -
                 (hand.getCurrentBetAmount() - currentPlayer.getCurrentBet()));
+        hand.addPot(hand.getCurrentBetAmount() - currentPlayer.getCurrentBet());
         currentPlayer.setCurrentBet(hand.getCurrentBetAmount());
         gp.setBetLabel(currentPlayer.getSeatNum() - 1, currentPlayer.getCurrentBet());
+        gp.setPot(hand.getPot());
         giveNextPlayerAction();
     }
 
     private void checkAction() {
         System.out.println("You checked!");
+        gp.setBetLabel(currentPlayer.getSeatNum() -1);
         giveNextPlayerAction();
     }
 
     private void foldAction() {
         currentPlayer.setActive(false);
         System.out.println("You Folded!");
+        gp.getPlayerLabel()[currentPlayer.getSeatNum()-1][0].setVisible(false);
+        gp.getPlayerLabel()[currentPlayer.getSeatNum()-1][1].setVisible(false);
         giveNextPlayerAction();
     }
 
@@ -90,23 +87,25 @@ public class Game {
         if(currentPlayer.getCurrentBet() > 0){
             currentPlayer.setChipCount(currentPlayer.getChipCount() + currentPlayer.getCurrentBet());
         }
-        currentPlayer.setCurrentBet(gp.getRaiseSlider().getValue());
-        hand.setCurrentBetAmount(gp.getRaiseSlider().getValue());
-        gp.setBetLabel(currentPlayer.getSeatNum() - 1,currentPlayer.getCurrentBet());
-        hand.setCurrentBetPivot(currentPlayer);
+
+        setPlayerBet(currentPlayer.getSeatNum()-1, gp.getRaiseSlider().getValue());
         giveNextPlayerAction();
     }
 
     private void updateButtons() {
-        if (hand.getCurrentBetAmount() == 0) {
+        if (hand.getCurrentBetAmount() == 0 || hand.getCurrentBetAmount() == currentPlayer.getCurrentBet()) {
+            //Special logic for the big blind
+            if (hand.getCurrentPlayer().getCurrentBet() > 0) {
+                gp.setRaiseOrCheck();
+            }
             gp.setCheckAction();
-            gp.getRaiseSlider().setMaximum(currentPlayer.getChipCount());
-        } else if (hand.getCurrentBetAmount() >= currentPlayer.getChipCount()) {
+            gp.getRaiseSlider().setMaximum(currentPlayer.getChipCount() + currentPlayer.getCurrentBet());
+        } else if (hand.getCurrentBetAmount() >= currentPlayer.getChipCount() + currentPlayer.getCurrentBet()) {
             gp.setAllInAction();
         } else {
-            gp.setBetAction(hand.getCurrentBetAmount());
+            gp.setBetAction(hand.getCurrentBetAmount(), currentPlayer);
             gp.getRaiseSlider().setMinimum(hand.getCurrentBetAmount() * 2);
-            gp.getRaiseSlider().setMaximum(currentPlayer.getChipCount());
+            gp.getRaiseSlider().setMaximum(currentPlayer.getChipCount() + currentPlayer.getCurrentBet());
         }
         System.out.println("Buttons updated!");
     }
@@ -129,7 +128,6 @@ public class Game {
     }
 
     private void updateSlider() {
-
 
         Runnable changeSlider = new Runnable() {
             @Override
@@ -175,7 +173,8 @@ public class Game {
             gp.resetAllButtons();
             updateButtons();
             gp.setPlayerNumber(currentPlayer.getSeatNum());
-        }
+           gp.setPot(hand.getPot());
+       }
 //        else if()
     }
 
@@ -204,15 +203,15 @@ public class Game {
                 break;
         }
         for(int i = 0; i < Main.players.size(); i++){
-            hand.addPot(Main.players.get(i).getCurrentBet());
             Main.players.get(i).setCurrentBet(0);
+            gp.getBetPanel()[i].setVisible(false);
         }
+        gp.setPot(hand.getPot());
         hand.setCurrentPlayer(Main.players.get(dealerButtonPos - 1));
+        hand.setCurrentBetPivot(currentPlayer);
         hand.setCurrentBetAmount(0);
         gp.getRaiseSlider().setMinimum(0);
-        hand.setCurrentBetPivot(currentPlayer);
         giveNextPlayerAction();
-        currentPlayer = hand.getCurrentPlayer();
 
     }
 
@@ -235,28 +234,52 @@ public class Game {
         Image image;
         Image tempImage;
         ImageIcon tempIcon;
-            tempC = hand.getDeck().pop();
-            image = Card.getImage(tempC.getValue(), tempC.getSuit());
-            tempImage = (image.getScaledInstance(65,90,Image.SCALE_DEFAULT));
-            tempIcon = new ImageIcon(tempImage);
-            gp.setCommunityCardImage(num, tempIcon);
+        tempC = hand.getDeck().pop();
+        image = Card.getImage(tempC.getValue(), tempC.getSuit());
+        tempImage = (image.getScaledInstance(65,90,Image.SCALE_DEFAULT));
+        tempIcon = new ImageIcon(tempImage);
+        gp.setCommunityCardImage(num, tempIcon);
     }
 
-    public void startHand() {
-        getNewHand();
-        updatePlayers();
-        setAllActive();
-        hand.setBigBlind(10);
-        Main.players.get((dealerButtonPos) % Main.players.size()).setCurrentBet(hand.getBigBlind());
-        Main.players.get((dealerButtonPos + 1) % Main.players.size()).setCurrentBet(hand.getBigBlind());
-        hand.setCurrentBetAmount(hand.getBigBlind());
-        hand.setCurrentPlayer(Main.players.get((dealerButtonPos + 2) % Main.players.size()));
-        currentPlayer = hand.getCurrentPlayer();
-        gp.setPlayerNumber(currentPlayer.getSeatNum());
-        gp.resetAllButtons();
+    public void setPlayerBet(int playerSeat, int bet){
+        Player tempPlayer = Main.players.get(playerSeat);
+        tempPlayer.setCurrentBet(bet);
+        tempPlayer.setChipCount(tempPlayer.getChipCount()-bet);
+        gp.setBetLabel(playerSeat,bet);
+        hand.setCurrentBetAmount(bet);
         hand.setCurrentBetPivot(currentPlayer);
-        updateSlider();
-        updateButtons();
+        hand.addPot(bet);
+        gp.setPot(hand.getPot());
 
+    }
+
+    private void initController() {
+        gp.getCallButton().addActionListener(e -> callAction());
+
+        gp.getCheckButton().addActionListener(e -> checkAction());
+
+        gp.getFoldButton().addActionListener(e -> foldAction());
+
+        gp.getBetButton().addActionListener(e -> betAction());
+
+        gp.getRaiseSlider().addChangeListener(e -> updateTextBox());
+
+        gp.getBetAmount().getDocument().addDocumentListener(new DocumentListener() {
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                updateSlider();
+            }
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                updateSlider();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                updateSlider();
+            }
+        });
     }
 }
