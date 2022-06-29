@@ -6,9 +6,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
-import java.util.List;
 
 //General class for keeping track of the game across hands
 public class Game {
@@ -28,12 +26,17 @@ public class Game {
     }
 
 
+    /**
+     * Starts a new hand instance
+      */
     private void getNewHand() {
         hand = new Hand();
     }
 
-
-    public void startHand() {
+    /**
+     * Initializes the values required at the start of a hand
+     */
+    private void startHand() {
         getNewHand();
         updatePlayers();
         setAllActive();
@@ -43,7 +46,7 @@ public class Game {
         setPlayerBet(dealerButtonPos % Main.players.size(), hand.getBigBlind()/2);
         setPlayerBet((dealerButtonPos+1) % Main.players.size(), hand.getBigBlind());
 
-
+        //Sets the current player to the UTG player (3 spots after the button)
         hand.setCurrentPlayer(Main.players.get((dealerButtonPos + 2) % Main.players.size()));
         currentPlayer = hand.getCurrentPlayer();
         gp.setPlayerNumber(currentPlayer.getSeatNum());
@@ -55,44 +58,66 @@ public class Game {
     }
 
 
-
-
+    /**
+     * Defines what will happen if the call button is pressed
+     */
     private void callAction() {
-        System.out.println("You called");
+        //If the current player has any current bet, reset it to before they bet before setting the new bet
         currentPlayer.setChipCount(currentPlayer.getChipCount() -
                 (hand.getCurrentBetAmount() - currentPlayer.getCurrentBet()));
         hand.addPot(hand.getCurrentBetAmount() - currentPlayer.getCurrentBet());
         currentPlayer.setCurrentBet(hand.getCurrentBetAmount());
+
         gp.setBetLabel(currentPlayer.getSeatNum() - 1, currentPlayer.getCurrentBet());
         gp.setPot(hand.getPot());
         giveNextPlayerAction();
     }
 
+    /**
+     * Defines what happens when the player checks
+     */
     private void checkAction() {
-        System.out.println("You checked!");
         gp.setBetLabel(currentPlayer.getSeatNum() -1);
         giveNextPlayerAction();
     }
 
+    /**
+     * Defines what happens when the player folds
+     */
     private void foldAction() {
+        Player tempPlayer = currentPlayer;
         currentPlayer.setActive(false);
-        System.out.println("You Folded!");
+
+        //Hides the player cards
         gp.getPlayerLabel()[currentPlayer.getSeatNum()-1][0].setVisible(false);
         gp.getPlayerLabel()[currentPlayer.getSeatNum()-1][1].setVisible(false);
         giveNextPlayerAction();
+        //Fixes a bug where folding UTG would go to the flop and folding the button would reeaaally mess with things
+        if(tempPlayer == hand.getCurrentBetPivot()){
+            hand.setCurrentBetPivot(currentPlayer);
+        }
     }
 
+    /**
+     * Defines what happens when the player bets/raises
+     */
     private void betAction() {
-        System.out.println("You bet!");
+        //If the player has a current bet, it makes sure they take it back before raising to the raise amount
         if(currentPlayer.getCurrentBet() > 0){
             currentPlayer.setChipCount(currentPlayer.getChipCount() + currentPlayer.getCurrentBet());
+            hand.addPot(0 - currentPlayer.getCurrentBet());
         }
 
         setPlayerBet(currentPlayer.getSeatNum()-1, gp.getRaiseSlider().getValue());
         giveNextPlayerAction();
     }
 
+    /**
+     * Updates the buttons depending on certain circumstances
+     */
     private void updateButtons() {
+
+        //If there isn't a bet larger than the amount of chips the player has put out already
         if (hand.getCurrentBetAmount() == 0 || hand.getCurrentBetAmount() == currentPlayer.getCurrentBet()) {
             //Special logic for the big blind
             if (hand.getCurrentPlayer().getCurrentBet() > 0) {
@@ -100,16 +125,22 @@ public class Game {
             }
             gp.setCheckAction();
             gp.getRaiseSlider().setMaximum(currentPlayer.getChipCount() + currentPlayer.getCurrentBet());
+
+            //If the current bet is more than the chips the current player has, set an all in layout
         } else if (hand.getCurrentBetAmount() >= currentPlayer.getChipCount() + currentPlayer.getCurrentBet()) {
             gp.setAllInAction();
+
         } else {
             gp.setBetAction(hand.getCurrentBetAmount(), currentPlayer);
             gp.getRaiseSlider().setMinimum(hand.getCurrentBetAmount() * 2);
             gp.getRaiseSlider().setMaximum(currentPlayer.getChipCount() + currentPlayer.getCurrentBet());
         }
-        System.out.println("Buttons updated!");
     }
 
+    /**
+     * Adds the player cards to the player hand in the gui by finding the file correlated to the suit
+     * and the card value of the deck stack pop
+     */
     private void updatePlayers(){
         Image tempImage;
         ImageIcon tempIcon;
@@ -127,6 +158,9 @@ public class Game {
         }
     }
 
+    /**
+     * updates the slider whenever the bet textbox is changed
+     */
     private void updateSlider() {
 
         Runnable changeSlider = new Runnable() {
@@ -140,6 +174,10 @@ public class Game {
         };
         SwingUtilities.invokeLater(changeSlider);
     }
+
+    /**
+     * Updates the bet amount textbox based on if the raise slider changes
+     */
     private void updateTextBox(){
         gp.getRaiseSlider().addChangeListener(new ChangeListener() {
             @Override
@@ -150,6 +188,10 @@ public class Game {
         });
     }
 
+    /**
+     * Finds the next valid player that is active
+     * @return the next active player
+     */
     private Player getNextPlayer(){
         Player nextPlayer;
         for(int i = 0; i < Main.players.size() - 1; i++){
@@ -161,31 +203,10 @@ public class Game {
         return currentPlayer;
     }
 
-    private void giveNextPlayerAction(){
-        Player nextPlayer = getNextPlayer();
-       if(nextPlayer == hand.getCurrentBetPivot()){
-           newBettingRound();
-        }
-        else if(currentPlayer != nextPlayer) {
-            currentPlayer = getNextPlayer();
-            hand.setCurrentPlayer(currentPlayer);
-            System.out.println("NextPlayer seat num is " + currentPlayer.getSeatNum());
-            gp.resetAllButtons();
-            updateButtons();
-            gp.setPlayerNumber(currentPlayer.getSeatNum());
-           gp.setPot(hand.getPot());
-       }
-//        else if()
-    }
 
-
-    private void setAllActive(){
-        for(Player i: Main.players){
-            i.setActive(true);
-        }
-    }
-
-    //TODO make this a switch statement
+    /**
+     * Defines the values needed for when there is a new betting round
+      */
     private void newBettingRound(){
         betRoundCounter++;
         gp.hideAllLabels();
@@ -208,13 +229,46 @@ public class Game {
         }
         gp.setPot(hand.getPot());
         hand.setCurrentPlayer(Main.players.get(dealerButtonPos - 1));
+        currentPlayer = hand.getCurrentPlayer();
         hand.setCurrentBetPivot(currentPlayer);
         hand.setCurrentBetAmount(0);
         gp.getRaiseSlider().setMinimum(0);
         giveNextPlayerAction();
-
+        hand.setCurrentBetPivot(currentPlayer);
     }
 
+    /**
+     * Updates the buttons for the next player once the current player has made an action
+     */
+    private void giveNextPlayerAction(){
+        Player nextPlayer = getNextPlayer();
+       if(nextPlayer == hand.getCurrentBetPivot()){
+           newBettingRound();
+        }
+        else if(currentPlayer != nextPlayer) {
+            currentPlayer = getNextPlayer();
+            hand.setCurrentPlayer(currentPlayer);
+            gp.resetAllButtons();
+            updateButtons();
+            gp.setPlayerNumber(currentPlayer.getSeatNum());
+           gp.setPot(hand.getPot());
+       }
+       System.out.println("Current bet pivot is " + hand.getCurrentBetPivot().getSeatNum());
+//        else if()
+    }
+
+    /**
+     * Sets all of the players to be active for when a new hand is started
+     */
+    private void setAllActive(){
+        for(Player i: Main.players){
+            i.setActive(true);
+        }
+    }
+
+    /**
+     * Tells the GUI to draw the flop cards
+     */
     private void updateFlopCards(){
         Card tempC;
         Image image;
@@ -229,6 +283,10 @@ public class Game {
         }
     }
 
+    /**
+     * Draws cards for the turn or the river
+     * @param num - either 3 (the turn) or 4 (the flop)
+     */
     private void updateTurnAndRiverCards(int num){
         Card tempC;
         Image image;
@@ -241,6 +299,11 @@ public class Game {
         gp.setCommunityCardImage(num, tempIcon);
     }
 
+    /**
+     * Updates the GUI for the player's bets when they do bet
+     * @param playerSeat - the seat of the current player
+     * @param bet - the amount the player bet/called/raised
+     */
     public void setPlayerBet(int playerSeat, int bet){
         Player tempPlayer = Main.players.get(playerSeat);
         tempPlayer.setCurrentBet(bet);
@@ -250,9 +313,11 @@ public class Game {
         hand.setCurrentBetPivot(currentPlayer);
         hand.addPot(bet);
         gp.setPot(hand.getPot());
-
     }
 
+    /**
+     * Adds all of the actionlisteners to the buttons, textbox, and slider
+     */
     private void initController() {
         gp.getCallButton().addActionListener(e -> callAction());
 

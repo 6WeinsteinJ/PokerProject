@@ -2,16 +2,10 @@ package src;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.text.NumberFormatter;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.text.NumberFormat;
 
 public class GamePanel {
@@ -72,6 +66,7 @@ public class GamePanel {
         betAmount = new JFormattedTextField(formatter);
 
 
+        //Adds the table to the background of the application
         try {
             BufferedImage myPicture = ImageIO.read(getClass().getResourceAsStream("./resources/table.jpeg"));
             JLabel picLabel = new JLabel(new ImageIcon(myPicture));
@@ -146,6 +141,9 @@ public class GamePanel {
         frame.setVisible(true);
     }
 
+    /**
+     * Initializes the player panel and bet panel arrays
+     */
     private void initPlayerAndBetPanel(){
         for(int i = 0; i < 9; i++){
             playerPanel[i] = new JPanel();
@@ -157,6 +155,9 @@ public class GamePanel {
         }
     }
 
+    /**
+     * Puts the frame at the front of the computer screen when first started
+     */
     public void frameToFront(){
         frame.setAlwaysOnTop(true);
         frame.toFront();
@@ -253,6 +254,11 @@ public class GamePanel {
         potLabel.setText("Pot: " + String.valueOf(pot));
     }
 
+    /**
+     * Updates the bet label to show the amount a player bet
+     * @param playerNum - the player that made the action
+     * @param bet - the amount bet
+     */
     public void setBetLabel(int playerNum, int bet){
         betLabel[playerNum].setText(String.valueOf(bet));
         betLabel[playerNum].setVisible(true);
@@ -260,6 +266,10 @@ public class GamePanel {
         betPanel[playerNum].add(betLabel[playerNum]);
     }
 
+    /**
+     * If no bet is given, display "check" in the betLabel
+     * @param playerNum - the player that made the action
+     */
     public void setBetLabel(int playerNum){
         betLabel[playerNum].setText("check");
         betLabel[playerNum].setVisible(true);
@@ -275,6 +285,12 @@ public class GamePanel {
         return betPanel;
     }
 
+    /**
+     * Sets the card images for each player
+     * @param i - Which player's cards are being updated
+     * @param j - Which card is being added
+     * @param image - The card image
+     */
     public void setLabelImage(int i,int j, ImageIcon image){
         playerLabel[i][j] = new JLabel();
         playerLabel[i][j].setIcon(image);
@@ -282,11 +298,19 @@ public class GamePanel {
         playerPanel[i].add(playerLabel[i][j]);
     }
 
+    /**
+     * Sets the community card images in the gui
+     * @param i - which community card panel is being modified
+     * @param image - the image of the card
+     */
     public void setCommunityCardImage(int i, ImageIcon image){
         communityCardsLabel[i].setIcon(image);
         communityCardPanel.add(communityCardsLabel[i]);
     }
 
+    /**
+     * Hides all the labels for after the bet round finishes
+     */
     public void hideAllLabels(){
         for(int i =0; i < Main.players.size(); i++){
             betLabel[i].setVisible(false);

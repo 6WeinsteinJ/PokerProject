@@ -1,10 +1,8 @@
 package src;
 
-import java.awt.*;
 import java.util.*;
 import java.util.List;
 
-import static src.Deck.*;
 
 
 public class Main {
