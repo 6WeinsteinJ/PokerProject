@@ -295,6 +295,7 @@ public class GamePanel {
         playerLabel[i][j] = new JLabel();
         playerLabel[i][j].setIcon(image);
         playerLabel[i][j].setVisible(true);
+        playerLabel[i][j].repaint();
         playerPanel[i].add(playerLabel[i][j]);
     }
 

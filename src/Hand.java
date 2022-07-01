@@ -14,6 +14,7 @@ public class Hand {
     private int currentBlind;
     private int bigBlind;
     private Player currentBetPivot;
+    private Player winningPlayer;
 
 
     public Hand(){
@@ -115,5 +116,14 @@ public class Hand {
 
     public int getPot(){
         return mainPot;
+    }
+
+    public void addCommunityCards(Card card){
+        communityCards.add(card);
+    }
+
+    public void setWinner(Player winner){
+        winningPlayer = winner;
+        winningPlayer.setChipCount(mainPot);
     }
 }

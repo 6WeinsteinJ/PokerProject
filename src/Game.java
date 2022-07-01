@@ -7,6 +7,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.concurrent.TimeUnit;
 
 //General class for keeping track of the game across hands
 public class Game {
@@ -16,6 +17,7 @@ public class Game {
     private GamePanel gp;
     private Player currentPlayer;
     private int betRoundCounter = 0;
+    private int foldCounter;
 
 
     public Game(GamePanel gp) {
@@ -37,9 +39,13 @@ public class Game {
      * Initializes the values required at the start of a hand
      */
     private void startHand() {
+//        resetGame();
         getNewHand();
         updatePlayers();
         setAllActive();
+
+        handCounter++;
+        foldCounter = 0;
         hand.setBigBlind(10);
 
         //Initializes the big and small blinds
@@ -57,6 +63,13 @@ public class Game {
 
     }
 
+    private void resetGame(){
+        for(int i = 0; i < Main.players.size(); i++){
+            for(int j = 0; j < 2; j++){
+                gp.setLabelImage(i,j,null);
+            }
+        }
+    }
 
     /**
      * Defines what will happen if the call button is pressed
@@ -87,10 +100,22 @@ public class Game {
     private void foldAction() {
         Player tempPlayer = currentPlayer;
         currentPlayer.setActive(false);
+        foldCounter++;
 
         //Hides the player cards
         gp.getPlayerLabel()[currentPlayer.getSeatNum()-1][0].setVisible(false);
         gp.getPlayerLabel()[currentPlayer.getSeatNum()-1][1].setVisible(false);
+        if(foldCounter == Main.players.size() - 1){
+            hand.setWinner(getNextPlayer());
+            System.out.println("Player " + getNextPlayer().getSeatNum() + " is the winner!");
+            try {
+                TimeUnit.SECONDS.sleep(3);
+            } catch(InterruptedException e) {
+                System.out.println("got interrupted!");
+            }
+            startHand();
+            return;
+        }
         giveNextPlayerAction();
         //Fixes a bug where folding UTG would go to the flop and folding the button would reeaaally mess with things
         if(tempPlayer == hand.getCurrentBetPivot()){
@@ -276,6 +301,7 @@ public class Game {
         ImageIcon tempIcon;
         for(int i = 0; i < 3; i++){
             tempC = hand.getDeck().pop();
+            hand.addCommunityCards(tempC);
             image = Card.getImage(tempC.getValue(), tempC.getSuit());
             tempImage = (image.getScaledInstance(65,90,Image.SCALE_DEFAULT));
             tempIcon = new ImageIcon(tempImage);
@@ -293,6 +319,7 @@ public class Game {
         Image tempImage;
         ImageIcon tempIcon;
         tempC = hand.getDeck().pop();
+        hand.addCommunityCards(tempC);
         image = Card.getImage(tempC.getValue(), tempC.getSuit());
         tempImage = (image.getScaledInstance(65,90,Image.SCALE_DEFAULT));
         tempIcon = new ImageIcon(tempImage);
